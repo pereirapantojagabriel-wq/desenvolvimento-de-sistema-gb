@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TrampoJovem — Vagas de Estágio e Jovem Aprendiz</title>
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Dynamic Navigation Bar -->
+  <div id="main-nav"></div>
+
+  <!-- Hero Section -->
+  <section class="hero-section text-center">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-lg-8">
+          <span class="badge bg-white text-primary px-3 py-2 rounded-pill fw-bold mb-3 shadow-sm">
+            <i class="bi bi-stars text-warning me-1"></i> Plataforma Oficial de Oportunidades
+          </span>
+          <h1 class="hero-title mb-3">Conectando Jovens e Estudantes ao Primeiro Emprego</h1>
+          <p class="lead opacity-90 mb-4">
+            Encontre vagas de <strong>Estágio</strong> e <strong>Jovem Aprendiz</strong> em empresas inovadoras. Candidate-se com praticidade e acompanhe todo o processo de seleção em tempo real.
+          </p>
+          
+          <!-- Botões de Demonstração Rápida -->
+          <div class="demo-bar text-dark d-inline-block text-start mb-2">
+            <div class="d-flex flex-wrap align-items-center gap-2">
+              <strong class="text-secondary"><i class="bi bi-lightning-charge-fill text-warning"></i> Acesso Rápido para Testes:</strong>
+              <button class="btn btn-sm btn-outline-primary fw-semibold" onclick="loginDemo('gabriel@demo.com', '123456')">
+                <i class="bi bi-person-badge me-1"></i> Entrar como Gabriel (Candidato)
+              </button>
+              <button class="btn btn-sm btn-outline-success fw-semibold" onclick="loginDemo('empresa@demo.com', '123456')">
+                <i class="bi bi-building-fill-check me-1"></i> Entrar como InovaTech (Empresa)
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Filtros de Busca -->
+  <main class="container mb-5">
+    <div class="card shadow-sm border-0 mb-4 p-3 bg-white rounded-4">
+      <div class="row g-3 align-items-end">
+        <div class="col-md-5">
+          <label class="form-label fw-semibold text-muted small"><i class="bi bi-search me-1"></i> Buscar por Cargo ou Palavra-chave</label>
+          <input type="text" id="filtro-busca" class="form-control" placeholder="Ex: Desenvolvimento, Suporte, Administrativo...">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label fw-semibold text-muted small"><i class="bi bi-tag me-1"></i> Tipo de Vaga</label>
+          <select id="filtro-tipo" class="form-select">
+            <option value="todos">Todos os Tipos</option>
+            <option value="Estágio">Estágio</option>
+            <option value="Jovem Aprendiz">Jovem Aprendiz</option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label fw-semibold text-muted small"><i class="bi bi-geo-alt me-1"></i> Localidade</label>
+          <input type="text" id="filtro-localidade" class="form-control" placeholder="Cidade ou Remoto">
+        </div>
+        <div class="col-md-2 d-flex gap-2">
+          <button class="btn btn-primary w-100 fw-semibold" onclick="carregarVagas()">
+            <i class="bi bi-funnel-fill me-1"></i> Filtrar
+          </button>
+          <button class="btn btn-outline-secondary" title="Limpar filtros" onclick="limparFiltros()">
+            <i class="bi bi-arrow-counterclockwise"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Indicador de Vagas -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h4 class="fw-bold mb-0 text-dark">
+        <i class="bi bi-briefcase-fill text-primary me-2"></i>Vagas Abertas Disponíveis
+      </h4>
+      <span id="contador-vagas" class="badge bg-secondary-subtle text-secondary border px-3 py-2 fs-6">
+        Carregando vagas...
+      </span>
+    </div>
+
+    <!-- Grid de Vagas -->
+    <div id="vagas-grid" class="row g-4">
+      <!-- Vagas renderizadas via JavaScript -->
+    </div>
+  </main>
+
+  <!-- Modal Detalhes da Vaga -->
+  <div class="modal fade" id="modalVaga" tabindex="-1" aria-labelledby="modalVagaLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content border-0 shadow-lg rounded-4">
+        <div class="modal-header border-bottom py-3">
+          <div>
+            <span id="modal-tipo-badge" class="badge mb-2"></span>
+            <h4 class="modal-title fw-bold" id="modal-titulo">Título da Vaga</h4>
+            <div class="text-muted small">
+              <i class="bi bi-building me-1"></i> <span id="modal-empresa"></span> &bull; 
+              <i class="bi bi-geo-alt ms-2 me-1"></i> <span id="modal-localidade"></span>
+            </div>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body p-4">
+          <div class="row g-3 mb-4">
+            <div class="col-sm-6">
+              <div class="p-3 bg-light rounded-3 border">
+                <small class="text-muted d-block fw-semibold"><i class="bi bi-calendar-event me-1"></i> Prazo Limite para Inscrição</small>
+                <span id="modal-prazo" class="fw-bold text-dark"></span>
+              </div>
+            </div>
+            <div class="col-sm-6">
+              <div class="p-3 bg-light rounded-3 border">
+                <small class="text-muted d-block fw-semibold"><i class="bi bi-briefcase me-1"></i> Modalidade de Contratação</small>
+                <span id="modal-modalidade" class="fw-bold text-dark"></span>
+              </div>
+            </div>
+          </div>
+
+          <h5 class="fw-bold text-dark mb-2"><i class="bi bi-file-text me-2 text-primary"></i>Descrição das Atividades</h5>
+          <p id="modal-descricao" class="text-secondary mb-4 lh-base" style="white-space: pre-line;"></p>
+
+          <h5 class="fw-bold text-dark mb-2"><i class="bi bi-check-circle me-2 text-success"></i>Requisitos e Habilidades</h5>
+          <p id="modal-requisitos" class="text-secondary mb-4 lh-base" style="white-space: pre-line;"></p>
+
+          <div id="modal-candidatura-feedback" class="mt-3"></div>
+        </div>
+        <div class="modal-footer border-top bg-light rounded-bottom-4">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Fechar</button>
+          <div id="modal-action-container">
+            <!-- Botão de candidatar ou avisos -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="bg-white border-top py-4 mt-auto">
+    <div class="container text-center text-muted small">
+      <p class="mb-1"><strong>TrampoJovem</strong> &copy; 2026 — Sistema Inteligente de Vagas e Candidaturas.</p>
+      <p class="mb-0">Construído em conformidade com as especificações do Simulado Centelha Rondônia &bull; Servidor ativo na porta 3011</p>
+    </div>
+  </footer>
+
+  <!-- Bootstrap 5 JS Bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- API Helper -->
+  <script src="js/api.js"></script>
+
+  <script>
+    let modalVagaInstance = null;
+    let vagaSelecionadaId = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      modalVagaInstance = new bootstrap.Modal(document.getElementById('modalVaga'));
+      carregarVagas();
+
+      // Permitir tecla Enter no input de busca
+      document.getElementById('filtro-busca').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') carregarVagas();
+      });
+      document.getElementById('filtro-localidade').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') carregarVagas();
+      });
+      document.getElementById('filtro-tipo').addEventListener('change', carregarVagas);
+    });
+
+    async function carregarVagas() {
+      const grid = document.getElementById('vagas-grid');
+      const contador = document.getElementById('contador-vagas');
+      grid.innerHTML = `
+        <div class="col-12 text-center py-5">
+          <div class="spinner-border text-primary" role="status"></div>
+          <p class="text-muted mt-2">Buscando vagas disponíveis...</p>
+        </div>
+      `;
+
+      const q = document.getElementById('filtro-busca').value.trim();
+      const tipo = document.getElementById('filtro-tipo').value;
+      const localidade = document.getElementById('filtro-localidade').value.trim();
+
+      const params = new URLSearchParams();
+      if (q) params.append('q', q);
+      if (tipo && tipo !== 'todos') params.append('tipo', tipo);
+      if (localidade) params.append('localidade', localidade);
+
+      try {
+        const data = await apiFetch(`/api/jobs/open?${params.toString()}`);
+        const jobs = data.jobs || [];
+
+        contador.textContent = `${jobs.length} vaga${jobs.length === 1 ? '' : 's'} encontrada${jobs.length === 1 ? '' : 's'}`;
+
+        if (jobs.length === 0) {
+          grid.innerHTML = `
+            <div class="col-12 text-center py-5">
+              <i class="bi bi-inbox fs-1 text-muted"></i>
+              <h5 class="fw-bold text-muted mt-3">Nenhuma vaga encontrada com estes filtros.</h5>
+              <p class="text-muted small">Tente pesquisar com termos mais amplos ou clique em limpar filtros.</p>
+              <button class="btn btn-outline-primary btn-sm" onclick="limparFiltros()">Limpar Filtros</button>
+            </div>
+          `;
+          return;
+        }
+
+        grid.innerHTML = jobs.map(job => {
+          const badgeClass = job.tipo_contratacao === 'Estágio' ? 'job-badge-estagio' : 'job-badge-aprendiz';
+          const prazoFormatado = formatarData(job.prazo_candidatura);
+
+          return `
+            <div class="col-md-6 col-lg-4">
+              <div class="job-card p-4 shadow-sm">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                  <span class="badge ${badgeClass} px-3 py-2 rounded-pill fs-7">
+                    <i class="bi ${job.tipo_contratacao === 'Estágio' ? 'bi-mortarboard' : 'bi-award'} me-1"></i>
+                    ${job.tipo_contratacao}
+                  </span>
+                  <small class="text-muted" title="Prazo de Inscrição">
+                    <i class="bi bi-clock me-1"></i> Até ${prazoFormatado}
+                  </small>
+                </div>
+                
+                <h5 class="fw-bold text-dark mb-1 text-truncate" title="${escapeHtml(job.titulo)}">${escapeHtml(job.titulo)}</h5>
+                <p class="text-primary fw-semibold small mb-2">
+                  <i class="bi bi-building me-1"></i> ${escapeHtml(job.empresa_nome)}
+                </p>
+
+                <p class="text-muted small mb-2">
+                  <i class="bi bi-geo-alt-fill text-danger me-1"></i> ${escapeHtml(job.localidade)}
+                </p>
+
+                <p class="text-secondary small mb-3 flex-grow-1" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
+                  ${escapeHtml(job.descricao)}
+                </p>
+
+                <div class="pt-3 border-top mt-auto">
+                  <button class="btn btn-outline-primary w-100 fw-semibold rounded-pill" onclick="abrirDetalhesVaga(${job.id_vaga})">
+                    <i class="bi bi-eye me-1"></i> Ver Detalhes & Candidatar
+                  </button>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      } catch (err) {
+        grid.innerHTML = `
+          <div class="col-12 text-center py-5 text-danger">
+            <i class="bi bi-exclamation-triangle fs-1"></i>
+            <p class="mt-2">${err.message}</p>
+          </div>
+        `;
+      }
+    }
+
+    function limparFiltros() {
+      document.getElementById('filtro-busca').value = '';
+      document.getElementById('filtro-tipo').value = 'todos';
+      document.getElementById('filtro-localidade').value = '';
+      carregarVagas();
+    }
+
+    async function abrirDetalhesVaga(idVaga) {
+      vagaSelecionadaId = idVaga;
+      document.getElementById('modal-candidatura-feedback').innerHTML = '';
+      
+      try {
+        const data = await apiFetch(`/api/jobs/${idVaga}`);
+        const job = data.job;
+        const jaCandidatou = data.jaCandidatou;
+        const statusCandidatura = data.statusCandidatura;
+
+        document.getElementById('modal-titulo').textContent = job.titulo;
+        document.getElementById('modal-empresa').textContent = job.empresa_nome;
+        document.getElementById('modal-localidade').textContent = job.localidade;
+        document.getElementById('modal-prazo').textContent = formatarData(job.prazo_candidatura);
+        document.getElementById('modal-modalidade').textContent = job.tipo_contratacao;
+        document.getElementById('modal-descricao').textContent = job.descricao;
+        document.getElementById('modal-requisitos').textContent = job.requisitos;
+
+        const badgeElem = document.getElementById('modal-tipo-badge');
+        badgeElem.textContent = job.tipo_contratacao;
+        badgeElem.className = `badge ${job.tipo_contratacao === 'Estágio' ? 'job-badge-estagio' : 'job-badge-aprendiz'} px-3 py-2 rounded-pill fs-7 mb-2`;
+
+        const actionContainer = document.getElementById('modal-action-container');
+        const user = getCurrentUser();
+
+        if (!user) {
+          actionContainer.innerHTML = `
+            <a href="login.html" class="btn btn-primary fw-semibold">
+              <i class="bi bi-box-arrow-in-right me-1"></i> Entrar para se Candidatar
+            </a>
+          `;
+        } else if (user.tipo_usuario === 'empresa') {
+          actionContainer.innerHTML = `
+            <span class="badge bg-secondary-subtle text-secondary border p-2">
+              <i class="bi bi-info-circle me-1"></i> Conectado como Empresa (somente candidatos podem se inscrever)
+            </span>
+          `;
+        } else if (jaCandidatou) {
+          actionContainer.innerHTML = `
+            <button class="btn btn-secondary fw-semibold" disabled>
+              <i class="bi bi-check2-circle text-success me-1"></i> Candidatura Já Realizada (${statusCandidatura})
+            </button>
+          `;
+        } else {
+          actionContainer.innerHTML = `
+            <button id="btn-candidatar" class="btn btn-success fw-semibold px-4" onclick="confirmarCandidatura(${job.id_vaga})">
+              <i class="bi bi-send-fill me-1"></i> Candidatar-se Agora
+            </button>
+          `;
+        }
+
+        modalVagaInstance.show();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    async function confirmarCandidatura(idVaga) {
+      const btn = document.getElementById('btn-candidatar');
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Enviando...';
+      }
+
+      try {
+        const res = await apiFetch('/api/applications/apply', {
+          method: 'POST',
+          body: { id_vaga: idVaga }
+        });
+
+        showToast(res.message, 'success');
+
+        const feedback = document.getElementById('modal-candidatura-feedback');
+        feedback.innerHTML = `
+          <div class="alert alert-success border-0 shadow-sm d-flex align-items-center mb-0">
+            <i class="bi bi-check-circle-fill fs-4 me-3"></i>
+            <div>
+              <strong>Sucesso!</strong> Sua candidatura foi registrada. Status atual: <strong>${res.status}</strong>.<br>
+              A empresa receberá seu perfil e analisará sua inscrição.
+            </div>
+          </div>
+        `;
+
+        const actionContainer = document.getElementById('modal-action-container');
+        actionContainer.innerHTML = `
+          <a href="candidato-candidaturas.html" class="btn btn-primary fw-semibold">
+            <i class="bi bi-journal-check me-1"></i> Ver Minhas Candidaturas
+          </a>
+        `;
+      } catch (err) {
+        showToast(err.message, 'error');
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="bi bi-send-fill me-1"></i> Candidatar-se Agora';
+        }
+      }
+    }
+
+    function formatarData(dataStr) {
+      if (!dataStr) return 'Não informado';
+      const partes = dataStr.split('-');
+      if (partes.length === 3) {
+        return `${partes[2]}/${partes[1]}/${partes[0]}`;
+      }
+      return dataStr;
+    }
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+  </script>
+</body>
+</html>

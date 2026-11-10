@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meu Perfil — TrampoJovem</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-light">
+
+  <div id="main-nav"></div>
+
+  <main class="container my-5">
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+
+        <!-- Card Cabeçalho -->
+        <div class="card shadow-sm border-0 rounded-4 mb-4 p-4 bg-white">
+          <div class="d-flex align-items-center gap-3">
+            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 64px; height: 64px; font-size: 1.8rem;">
+              <i class="bi bi-person-fill"></i>
+            </div>
+            <div>
+              <h3 class="fw-bold mb-0 text-dark" id="display-nome">Meu Perfil</h3>
+              <span class="badge bg-primary-subtle text-primary border me-2">Candidato</span>
+              <span class="text-muted small" id="display-email"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Formulário de Perfil -->
+        <div class="card shadow-sm border-0 rounded-4 bg-white p-4">
+          <h5 class="fw-bold text-dark mb-3 border-bottom pb-2">
+            <i class="bi bi-pencil-square text-primary me-2"></i>Atualizar Informações do Perfil (RF05)
+          </h5>
+
+          <form id="form-perfil" onsubmit="salvarPerfil(event)">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label fw-semibold small text-muted">Nome Completo</label>
+                <input type="text" id="perfil-nome" class="form-control" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-semibold small text-muted">E-mail (Cadastrado)</label>
+                <input type="email" id="perfil-email" class="form-control bg-light" readonly disabled>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label fw-semibold small text-muted">Telefone / WhatsApp</label>
+                <input type="text" id="perfil-telefone" class="form-control" placeholder="(69) 99999-9999">
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label fw-semibold small text-muted">Escolaridade / Turma / Curso</label>
+                <input type="text" id="perfil-formacao" class="form-control" placeholder="Ex: 3º B – Técnico em Informática">
+              </div>
+
+              <div class="col-12">
+                <label class="form-label fw-semibold small text-muted">Habilidades e Conhecimentos Técnicos</label>
+                <input type="text" id="perfil-habilidades" class="form-control" placeholder="Ex: Informática, Redes, Lógica de programação, HTML/CSS">
+                <small class="text-muted">Separe as habilidades por vírgulas.</small>
+              </div>
+
+              <div class="col-12">
+                <label class="form-label fw-semibold small text-muted">Apresentação Pessoal / Sobre Mim</label>
+                <textarea id="perfil-bio" class="form-control" rows="4" placeholder="Descreva seus interesses, objetivos profissionais e experiências anteriores..."></textarea>
+              </div>
+
+              <div class="col-12 pt-3 border-top d-flex justify-content-end gap-2">
+                <a href="index.html" class="btn btn-outline-secondary">Cancelar</a>
+                <button type="submit" id="btn-salvar" class="btn btn-primary fw-semibold px-4 shadow-sm">
+                  <i class="bi bi-check-lg me-1"></i> Salvar Alterações
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/api.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const user = getCurrentUser();
+      if (!user) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      await carregarDadosPerfil();
+    });
+
+    async function carregarDadosPerfil() {
+      try {
+        const res = await apiFetch('/api/users/profile');
+        const p = res.profile;
+
+        document.getElementById('display-nome').textContent = p.nome;
+        document.getElementById('display-email').textContent = p.email;
+
+        document.getElementById('perfil-nome').value = p.nome || '';
+        document.getElementById('perfil-email').value = p.email || '';
+        document.getElementById('perfil-telefone').value = p.telefone || '';
+        document.getElementById('perfil-formacao').value = p.formacao || '';
+        document.getElementById('perfil-habilidades').value = p.habilidades || '';
+        document.getElementById('perfil-bio').value = p.bio || '';
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    async function salvarPerfil(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btn-salvar');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Salvando...';
+
+      const nome = document.getElementById('perfil-nome').value;
+      const telefone = document.getElementById('perfil-telefone').value;
+      const formacao = document.getElementById('perfil-formacao').value;
+      const habilidades = document.getElementById('perfil-habilidades').value;
+      const bio = document.getElementById('perfil-bio').value;
+
+      try {
+        const res = await apiFetch('/api/users/profile', {
+          method: 'PUT',
+          body: { nome, telefone, formacao, habilidades, bio }
+        });
+
+        // Atualiza dados no localStorage
+        const user = getCurrentUser();
+        if (user) {
+          user.nome = res.profile.nome;
+          setCurrentUser(user);
+        }
+
+        renderNavbar();
+        document.getElementById('display-nome').textContent = res.profile.nome;
+        showToast(res.message, 'success');
+      } catch (err) {
+        showToast(err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-check-lg me-1"></i> Salvar Alterações';
+      }
+    }
+  </script>
+</body>
+</html>

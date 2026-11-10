@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel da Empresa — TrampoJovem</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-light">
+
+  <div id="main-nav"></div>
+
+  <main class="container my-5">
+    
+    <!-- Topo do Painel com Ação -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+      <div>
+        <h2 class="fw-bold text-dark mb-1">
+          <i class="bi bi-building-gear text-success me-2"></i>Gestão de Vagas da Empresa
+        </h2>
+        <p class="text-muted mb-0">Cadastre novas oportunidades, acompanhe inscritos e altere o status das vagas (RF06, RF09).</p>
+      </div>
+      <button class="btn btn-success fw-semibold shadow-sm px-4 py-2 rounded-3" onclick="abrirModalNovaVaga()">
+        <i class="bi bi-plus-lg me-1"></i> Publicar Nova Vaga
+      </button>
+    </div>
+
+    <!-- Cards de Métricas -->
+    <div class="row g-3 mb-4">
+      <div class="col-md-4">
+        <div class="card border-0 shadow-sm rounded-4 p-3 bg-white">
+          <div class="d-flex align-items-center">
+            <div class="bg-primary-subtle text-primary p-3 rounded-4 me-3">
+              <i class="bi bi-briefcase-fill fs-3"></i>
+            </div>
+            <div>
+              <span class="text-muted small fw-semibold">Total de Vagas</span>
+              <h3 class="fw-bold mb-0 text-dark" id="metric-total-vagas">0</h3>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card border-0 shadow-sm rounded-4 p-3 bg-white">
+          <div class="d-flex align-items-center">
+            <div class="bg-success-subtle text-success p-3 rounded-4 me-3">
+              <i class="bi bi-check-circle-fill fs-3"></i>
+            </div>
+            <div>
+              <span class="text-muted small fw-semibold">Vagas Abertas</span>
+              <h3 class="fw-bold mb-0 text-dark" id="metric-vagas-abertas">0</h3>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card border-0 shadow-sm rounded-4 p-3 bg-white">
+          <div class="d-flex align-items-center">
+            <div class="bg-warning-subtle text-warning p-3 rounded-4 me-3">
+              <i class="bi bi-people-fill fs-3"></i>
+            </div>
+            <div>
+              <span class="text-muted small fw-semibold">Candidaturas Recebidas</span>
+              <h3 class="fw-bold mb-0 text-dark" id="metric-total-inscritos">0</h3>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabela de Vagas da Empresa -->
+    <div class="card shadow-sm border-0 rounded-4 bg-white overflow-hidden">
+      <div class="card-header bg-white border-0 py-3 px-4">
+        <h5 class="fw-bold text-dark mb-0">Minhas Vagas Cadastradas</h5>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light text-uppercase small text-muted">
+              <tr>
+                <th class="ps-4 py-3">Título da Vaga</th>
+                <th class="py-3">Modalidade</th>
+                <th class="py-3">Localidade</th>
+                <th class="py-3">Prazo</th>
+                <th class="py-3">Status</th>
+                <th class="py-3 text-center">Candidatos</th>
+                <th class="pe-4 py-3 text-end">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="lista-vagas-empresa">
+              <tr>
+                <td colspan="7" class="text-center py-5">
+                  <div class="spinner-border text-primary" role="status"></div>
+                  <p class="text-muted mt-2 mb-0">Carregando vagas...</p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Modal Criar / Editar Vaga -->
+  <div class="modal fade" id="modalVagaForm" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content border-0 shadow-lg rounded-4">
+        <div class="modal-header border-bottom py-3">
+          <h5 class="modal-title fw-bold" id="modalVagaFormTitulo">Publicar Nova Vaga</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <form id="form-vaga" onsubmit="salvarVaga(event)">
+          <div class="modal-body p-4">
+            <input type="hidden" id="vaga-id">
+
+            <div class="row g-3">
+              <div class="col-md-8">
+                <label class="form-label fw-semibold small text-muted">Título da Oportunidade *</label>
+                <input type="text" id="vaga-titulo" class="form-control" placeholder="Ex: Estágio em Desenvolvimento de Sistemas" required>
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label fw-semibold small text-muted">Tipo de Contratação *</label>
+                <select id="vaga-tipo" class="form-select" required>
+                  <option value="Estágio">Estágio</option>
+                  <option value="Jovem Aprendiz">Jovem Aprendiz</option>
+                </select>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label fw-semibold small text-muted">Localidade *</label>
+                <input type="text" id="vaga-localidade" class="form-control" placeholder="Ex: Porto Velho - RO (Presencial / Remoto)" required>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label fw-semibold small text-muted">Prazo Limite de Candidatura *</label>
+                <input type="date" id="vaga-prazo" class="form-control" required>
+              </div>
+
+              <div class="col-12">
+                <label class="form-label fw-semibold small text-muted">Descrição das Atividades *</label>
+                <textarea id="vaga-descricao" class="form-control" rows="3" placeholder="Descreva as responsabilidades e tarefas do dia a dia..." required></textarea>
+              </div>
+
+              <div class="col-12">
+                <label class="form-label fw-semibold small text-muted">Requisitos e Conhecimentos Desejados *</label>
+                <textarea id="vaga-requisitos" class="form-control" rows="3" placeholder="Requisitos como escolaridade, cursos, ferramentas ou habilidades comportamentais..." required></textarea>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer border-top bg-light rounded-bottom-4">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" id="btn-submit-vaga" class="btn btn-success fw-semibold px-4">
+              <i class="bi bi-check-lg me-1"></i> Salvar Vaga
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/api.js"></script>
+
+  <script>
+    let modalVagaFormInstance = null;
+    let vagasGlobais = [];
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const user = getCurrentUser();
+      if (!user) {
+        window.location.href = 'login.html';
+        return;
+      }
+      if (user.tipo_usuario !== 'empresa') {
+        window.location.href = 'index.html';
+        return;
+      }
+
+      modalVagaFormInstance = new bootstrap.Modal(document.getElementById('modalVagaForm'));
+      carregarVagasEmpresa();
+    });
+
+    async function carregarVagasEmpresa() {
+      const tbody = document.getElementById('lista-vagas-empresa');
+
+      try {
+        const res = await apiFetch('/api/jobs/company');
+        vagasGlobais = res.jobs || [];
+
+        // Atualizar métricas
+        document.getElementById('metric-total-vagas').textContent = vagasGlobais.length;
+        const abertas = vagasGlobais.filter(v => v.status === 'aberta').length;
+        document.getElementById('metric-vagas-abertas').textContent = abertas;
+        const totalInscritos = vagasGlobais.reduce((acc, v) => acc + (v.total_candidatos || 0), 0);
+        document.getElementById('metric-total-inscritos').textContent = totalInscritos;
+
+        if (vagasGlobais.length === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="7" class="text-center py-5">
+                <i class="bi bi-inbox fs-1 text-muted"></i>
+                <h5 class="fw-bold text-muted mt-3">Você ainda não publicou nenhuma vaga.</h5>
+                <p class="text-muted small">Clique no botão abaixo para criar sua primeira oportunidade!</p>
+                <button class="btn btn-success btn-sm rounded-pill px-4" onclick="abrirModalNovaVaga()">Publicar Nova Vaga</button>
+              </td>
+            </tr>
+          `;
+          return;
+        }
+
+        tbody.innerHTML = vagasGlobais.map(job => {
+          const badgeTipo = job.tipo_contratacao === 'Estágio' ? 'job-badge-estagio' : 'job-badge-aprendiz';
+          const isAberta = job.status === 'aberta';
+          const statusBadge = isAberta 
+            ? '<span class="badge bg-success-subtle text-success border px-2 py-1"><i class="bi bi-circle-fill me-1" style="font-size:0.5rem"></i> Aberta</span>'
+            : '<span class="badge bg-secondary-subtle text-secondary border px-2 py-1"><i class="bi bi-lock-fill me-1"></i> Encerrada</span>';
+
+          const prazo = job.prazo_candidatura ? job.prazo_candidatura.split('-').reverse().join('/') : '-';
+
+          return `
+            <tr>
+              <td class="ps-4">
+                <div class="fw-bold text-dark">${escapeHtml(job.titulo)}</div>
+                <small class="text-muted">Cadastrada em ${new Date(job.criado_em).toLocaleDateString('pt-BR')}</small>
+              </td>
+              <td><span class="badge ${badgeTipo} px-2 py-1 rounded-pill small">${job.tipo_contratacao}</span></td>
+              <td class="text-muted small"><i class="bi bi-geo-alt me-1"></i>${escapeHtml(job.localidade)}</td>
+              <td class="text-muted small">${prazo}</td>
+              <td>${statusBadge}</td>
+              <td class="text-center">
+                <a href="empresa-candidatos.html?id_vaga=${job.id_vaga}" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-semibold">
+                  <i class="bi bi-people-fill me-1"></i> ${job.total_candidatos || 0}
+                </a>
+              </td>
+              <td class="pe-4 text-end">
+                <div class="btn-group">
+                  <a href="empresa-candidatos.html?id_vaga=${job.id_vaga}" class="btn btn-sm btn-primary" title="Ver Candidatos (RF14)">
+                    <i class="bi bi-eye-fill"></i>
+                  </a>
+                  <button class="btn btn-sm btn-outline-secondary" onclick="editarVaga(${job.id_vaga})" title="Editar Informações (RF09)">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  <button class="btn btn-sm ${isAberta ? 'btn-outline-danger' : 'btn-outline-success'}" onclick="alternarStatus(${job.id_vaga})" title="${isAberta ? 'Encerrar Vaga' : 'Reabrir Vaga'}">
+                    <i class="bi ${isAberta ? 'bi-x-circle' : 'bi-arrow-clockwise'}"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      } catch (err) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" class="text-center py-5 text-danger">
+              <i class="bi bi-exclamation-triangle fs-2"></i>
+              <p class="mt-2 mb-0">${err.message}</p>
+            </td>
+          </tr>
+        `;
+      }
+    }
+
+    function abrirModalNovaVaga() {
+      document.getElementById('modalVagaFormTitulo').textContent = 'Publicar Nova Vaga (RF06)';
+      document.getElementById('form-vaga').reset();
+      document.getElementById('vaga-id').value = '';
+      modalVagaFormInstance.show();
+    }
+
+    function editarVaga(id) {
+      const job = vagasGlobais.find(v => v.id_vaga === id);
+      if (!job) return;
+
+      document.getElementById('modalVagaFormTitulo').textContent = 'Editar Vaga (RF09)';
+      document.getElementById('vaga-id').value = job.id_vaga;
+      document.getElementById('vaga-titulo').value = job.titulo;
+      document.getElementById('vaga-tipo').value = job.tipo_contratacao;
+      document.getElementById('vaga-localidade').value = job.localidade;
+      document.getElementById('vaga-prazo').value = job.prazo_candidatura;
+      document.getElementById('vaga-descricao').value = job.descricao;
+      document.getElementById('vaga-requisitos').value = job.requisitos;
+
+      modalVagaFormInstance.show();
+    }
+
+    async function salvarVaga(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btn-submit-vaga');
+      btn.disabled = true;
+
+      const id = document.getElementById('vaga-id').value;
+      const payload = {
+        titulo: document.getElementById('vaga-titulo').value,
+        tipo_contratacao: document.getElementById('vaga-tipo').value,
+        localidade: document.getElementById('vaga-localidade').value,
+        prazo_candidatura: document.getElementById('vaga-prazo').value,
+        descricao: document.getElementById('vaga-descricao').value,
+        requisitos: document.getElementById('vaga-requisitos').value
+      };
+
+      try {
+        if (id) {
+          // Edição
+          const res = await apiFetch(`/api/jobs/${id}`, {
+            method: 'PUT',
+            body: payload
+          });
+          showToast(res.message, 'success');
+        } else {
+          // Criação
+          const res = await apiFetch('/api/jobs', {
+            method: 'POST',
+            body: payload
+          });
+          showToast(res.message, 'success');
+        }
+
+        modalVagaFormInstance.hide();
+        carregarVagasEmpresa();
+      } catch (err) {
+        showToast(err.message, 'error');
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    async function alternarStatus(id) {
+      if (!confirm('Deseja alternar o status desta vaga (Aberta / Encerrada)?')) return;
+
+      try {
+        const res = await apiFetch(`/api/jobs/${id}/toggle-status`, { method: 'PATCH' });
+        showToast(res.message, 'info');
+        carregarVagasEmpresa();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+  </script>
+</body>
+</html>

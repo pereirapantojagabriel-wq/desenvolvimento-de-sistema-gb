@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recuperar Senha — TrampoJovem</title>
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-light">
+
+  <div id="main-nav"></div>
+
+  <main class="container my-5">
+    <div class="row justify-content-center">
+      <div class="col-md-7 col-lg-5">
+
+        <div class="card shadow-lg border-0 rounded-4 overflow-hidden bg-white">
+          <div class="card-header bg-white border-0 pt-4 pb-0 text-center">
+            <div class="mb-3">
+              <div class="bg-warning-subtle text-warning-emphasis d-inline-flex p-3 rounded-circle">
+                <i class="bi bi-key-fill fs-2"></i>
+              </div>
+            </div>
+            <h3 class="fw-bold mb-1 text-dark">Recuperação de Senha</h3>
+            <p class="text-muted small">Informe seu e-mail cadastrado para redefinir suas credenciais de acesso com segurança.</p>
+          </div>
+
+          <div class="card-body p-4 pt-2">
+
+            <!-- PASSO 1: Solicitar Código -->
+            <div id="step-solicitar">
+              <form id="form-solicitar" onsubmit="solicitarCodigo(event)">
+                <div class="mb-3">
+                  <label class="form-label fw-semibold small text-muted">Endereço de E-mail</label>
+                  <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-envelope text-muted"></i></span>
+                    <input type="email" id="rec-email" class="form-control border-start-0" placeholder="seuemail@exemplo.com" required>
+                  </div>
+                  <div class="form-text small">Você receberá um código de autenticação para redefinir sua senha.</div>
+                </div>
+
+                <button type="submit" id="btn-solicitar" class="btn btn-primary w-100 py-2 fw-semibold rounded-3 mb-3 shadow-sm">
+                  <i class="bi bi-send-fill me-1"></i> Enviar Código de Recuperação
+                </button>
+
+                <div class="text-center border-top pt-3">
+                  <a href="login.html" class="text-decoration-none small text-muted">
+                    <i class="bi bi-arrow-left me-1"></i> Voltar para a tela de Login
+                  </a>
+                </div>
+              </form>
+            </div>
+
+            <!-- PASSO 2: Inserir Código e Nova Senha -->
+            <div id="step-redefinir" style="display: none;">
+              <div class="alert alert-info border-0 py-2 px-3 small d-flex align-items-center mb-3">
+                <i class="bi bi-info-circle-fill me-2 fs-5"></i>
+                <div id="info-codigo-enviado">Código enviado com sucesso!</div>
+              </div>
+
+              <form id="form-redefinir" onsubmit="confirmarRedefinicao(event)">
+                <div class="mb-3">
+                  <label class="form-label fw-semibold small text-muted">Código de Verificação (6 dígitos)</label>
+                  <input type="text" id="rec-codigo" class="form-control text-center fw-bold fs-5 letter-spacing-2" placeholder="849201" maxlength="6" required>
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label fw-semibold small text-muted">Nova Senha (min. 6 caracteres)</label>
+                  <input type="password" id="rec-nova-senha" class="form-control" placeholder="••••••••" minlength="6" required>
+                </div>
+
+                <div class="mb-4">
+                  <label class="form-label fw-semibold small text-muted">Confirmar Nova Senha</label>
+                  <input type="password" id="rec-confirma-senha" class="form-control" placeholder="••••••••" minlength="6" required>
+                </div>
+
+                <button type="submit" id="btn-redefinir" class="btn btn-success w-100 py-2 fw-semibold rounded-3 mb-3 shadow-sm">
+                  <i class="bi bi-shield-check me-1"></i> Redefinir Senha
+                </button>
+
+                <div class="text-center border-top pt-3">
+                  <button type="button" class="btn btn-link text-decoration-none small text-muted" onclick="voltarPasso1()">
+                    <i class="bi bi-arrow-counterclockwise me-1"></i> Trocar de e-mail
+                  </button>
+                </div>
+              </form>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/api.js"></script>
+
+  <script>
+    let emailRecuperacao = '';
+
+    async function solicitarCodigo(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btn-solicitar');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Verificando...';
+
+      const email = document.getElementById('rec-email').value.trim();
+
+      try {
+        const res = await apiFetch('/api/auth/forgot-password', {
+          method: 'POST',
+          body: { email }
+        });
+
+        emailRecuperacao = email;
+        showToast(res.message, 'success');
+
+        document.getElementById('info-codigo-enviado').innerHTML = `
+          Código de recuperação gerado para <strong>${email}</strong>.<br>
+          Código de teste pré-preenchido: <strong class="badge bg-primary text-white">${res.codigoSimulado}</strong>
+        `;
+        document.getElementById('rec-codigo').value = res.codigoSimulado;
+
+        document.getElementById('step-solicitar').style.display = 'none';
+        document.getElementById('step-redefinir').style.display = 'block';
+      } catch (err) {
+        showToast(err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-send-fill me-1"></i> Enviar Código de Recuperação';
+      }
+    }
+
+    async function confirmarRedefinicao(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btn-redefinir');
+      const codigo = document.getElementById('rec-codigo').value.trim();
+      const novaSenha = document.getElementById('rec-nova-senha').value;
+      const confirmaSenha = document.getElementById('rec-confirma-senha').value;
+
+      if (novaSenha !== confirmaSenha) {
+        showToast('As duas senhas digitadas não coincidem.', 'error');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Redefinindo...';
+
+      try {
+        const res = await apiFetch('/api/auth/reset-password', {
+          method: 'POST',
+          body: {
+            email: emailRecuperacao,
+            codigo,
+            nova_senha: novaSenha
+          }
+        });
+
+        showToast(res.message, 'success');
+        setTimeout(() => {
+          window.location.href = 'login.html';
+        }, 1200);
+      } catch (err) {
+        showToast(err.message, 'error');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-shield-check me-1"></i> Redefinir Senha';
+      }
+    }
+
+    function voltarPasso1() {
+      document.getElementById('step-redefinir').style.display = 'none';
+      document.getElementById('step-solicitar').style.display = 'block';
+    }
+  </script>
+</body>
+</html>
