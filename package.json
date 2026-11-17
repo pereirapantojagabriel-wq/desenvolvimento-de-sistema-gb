@@ -1,15 +1,28 @@
 {
-  "name": "desenvolvimento-de-sistema",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "name": "trampojovem",
+  "version": "2.5.0",
+  "description": "TrampoJovem — Sistema de Vagas e Candidaturas (Estágio & Jovem Aprendiz). Plataforma completa desenvolvida para o Simulado Centelha 3 Rondônia / IFRO.",
+  "main": "server.js",
   "scripts": {
     "start": "node server.js",
+    "generate-catalog": "node generate_catalogue_with_prints.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "trampojovem",
+    "estagio",
+    "jovem-aprendiz",
+    "vagas",
+    "candidaturas",
+    "centelha",
+    "ifro",
+    "desenvolvimento-de-sistemas",
+    "nodejs",
+    "express",
+    "sqlite"
+  ],
+  "author": "Gabriel Pereira Pantoja <pantojapereirapirulito@gmail.com>",
+  "license": "MIT",
   "dependencies": {
     "bcryptjs": "^3.0.3",
     "better-sqlite3": "^13.0.3",
