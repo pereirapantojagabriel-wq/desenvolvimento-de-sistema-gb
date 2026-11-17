@@ -19,8 +19,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// Servir arquivos estáticos (HTML, CSS, JS)
-app.use(express.static(path.join(__dirname, 'public')));
+// Diretório estático compatível com local e Vercel
+const publicDir = path.join(__dirname, 'public');
+app.use(express.static(publicDir));
 
 // Rotas da API
 app.use('/api/auth', authRoutes);
@@ -33,6 +34,7 @@ app.get('/api/health', (req, res) => {
   res.json({
     status: 'online',
     port: PORT,
+    environment: process.env.VERCEL ? 'vercel-serverless' : 'local-node',
     timestamp: new Date().toISOString()
   });
 });
@@ -44,15 +46,21 @@ app.use('/api', (req, res) => {
 
 // Fallback para frontend SPA / navegação direta
 app.use((req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  const indexPath = path.join(publicDir, 'index.html');
+  res.sendFile(indexPath);
 });
 
-// Iniciar servidor na porta 3011 em 0.0.0.0
-app.listen(PORT, '0.0.0.0', () => {
-  console.log('========================================================');
-  console.log(`🚀 Sistema de Vagas e Candidaturas iniciado!`);
-  console.log(`🌐 Acesse agora pelo navegador: http://localhost:${PORT}`);
-  console.log(`🌐 Ou pelo IP: http://127.0.0.1:${PORT}`);
-  console.log(`💼 Porta configurada: ${PORT}`);
-  console.log('========================================================');
-});
+// Iniciar servidor local se não estiver rodando no ambiente Vercel Serverless
+if (!process.env.VERCEL && !process.env.AWS_LAMBDA_FUNCTION_NAME) {
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log('========================================================');
+    console.log(`🚀 Sistema de Vagas e Candidaturas iniciado!`);
+    console.log(`🌐 Acesse agora pelo navegador: http://localhost:${PORT}`);
+    console.log(`🌐 Ou pelo IP: http://127.0.0.1:${PORT}`);
+    console.log(`💼 Porta configurada: ${PORT}`);
+    console.log('========================================================');
+  });
+}
+
+// Exportar app para a Vercel Serverless Function
+module.exports = app;
